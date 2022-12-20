@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    environment {
+        python_interpreter_path = ''
+        git_username = ''
+        repository_name = ''
+    }
+    stages {
+        stage('前置工作') {
+            steps {
+                echo '工作目录：'
+                sh 'pwd'
+                echo '清除历史项目目录：'
+                sh 'rm -rf ${WORKSPACE}/${repository_name}'
+                echo '拉取项目...'
+                sh 'git clone git@github.com:${git_username}/${repository_name}.git'
+            }
+        }
+        stage('执行测试') {
+            steps {
+                echo '运行入口程序main.py'
+                sh '${python_interpreter_path} ${WORKSPACE}/${repository_name}/main/main.py'
+            }
+        }
+        stage('后置工作') {
+            steps {
+                echo '报告目录：'
+                sh 'cd ${WORKSPACE}/${repository_name}/reports/'
+            }
+        }
+    }
+    post {
+        success {
+            echo '自动化执行成功'
+        }
+        failure {
+            echo '自动化执行失败'
+        }
+    }
+}
